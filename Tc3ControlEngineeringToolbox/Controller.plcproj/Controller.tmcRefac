@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Refactors>
+  <Renames>
+    <RenamedSymbol>
+      <Type guid="08b7b4be-dd7c-4968-925b-b68dd8a83ed1">MAIN</Type>
+      <From>TESTPID_</From>
+      <To>testPid_</To>
+    </RenamedSymbol>
+  </Renames>
+</Refactors>
