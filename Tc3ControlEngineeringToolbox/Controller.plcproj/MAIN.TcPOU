@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.6">
+  <POU Name="MAIN" Id="{08b7b4be-dd7c-4968-925b-b68dd8a83ed1}" SpecialFunc="None">
+    <Declaration><![CDATA[
+PROGRAM MAIN
+VAR
+	testPid_ : BOOL := FALSE;
+	testController_ : PidControllerTest;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF testPid_ THEN
+	testController_.cyclic();
+ELSE
+	testController_.reset();
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

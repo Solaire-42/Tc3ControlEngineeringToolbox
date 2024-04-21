@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.6">
+  <POU Name="PidController" Id="{f0fe1ff9-cf00-4079-8b85-73b781bbb7df}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK PidController
+VAR
+	desiredValue_ : LREAL;
+	actualValue_ : LREAL;
+	previousValue_ : LREAL;
+	error_ : LREAL;
+	controlOutput_ : LREAL;
+	
+	cycleTime_ : UDINT;
+	
+	firstLoop_ : BOOL := TRUE;
+	
+	kp_ : LREAL;
+	ki_ : LREAL;
+	kd_ : LREAL;
+	
+	p_ : LREAL;
+	i_ : LREAL;
+	d_ : LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="calculateDifferential" Id="{d72610e8-b849-4d78-b7e6-a0a51a0546da}">
+      <Declaration><![CDATA[
+METHOD calculateDifferential
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+d_ := kd_ * ((actualValue_ - previousValue_) / cycleTime_);
+
+IF previousValue_ = 0 THEN
+	d_ := 0;
+END_IF
+
+previousValue_ := actualValue_;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="calculateIntegral" Id="{ae3494a9-c3f3-421a-ac47-f814e80fb549}">
+      <Declaration><![CDATA[
+METHOD calculateIntegral
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+i_ := i_ + ki_ * error_;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="calculateOutput" Id="{46507d54-ada6-4753-bd5f-c6033668a7b4}">
+      <Declaration><![CDATA[
+METHOD calculateOutput : LREAL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+calculateOutput := p_ + i_ + d_;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="calculateProportional" Id="{f128500b-6413-4df5-a8dc-0dffe3cf25ce}">
+      <Declaration><![CDATA[
+METHOD calculateProportional
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+p_ := kp_ * error_;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="cyclic" Id="{df297eb9-d813-4b4c-98f1-3a28fa58764e}">
+      <Declaration><![CDATA[
+METHOD cyclic
+VAR_INPUT
+	actualValue : LREAL;
+END_VAR
+VAR_OUTPUT
+	controlOutput : LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+IF firstLoop_ THEN
+	getCycleTime();
+	firstLoop_ := FALSE;
+END_IF
+
+actualValue_ := actualValue;
+error_ := desiredValue_ - actualValue_;
+
+// P
+calculateProportional();
+// I
+calculateIntegral();
+// D 
+calculateProportional();
+
+controlOutput := calculateOutput();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{9a068693-6288-4318-89c6-345ec40ca419}">
+      <Declaration><![CDATA[//FB_Init is always available implicitly and it is used primarily for initialization.
+//The return value is not evaluated. For a specific influence, you can also declare the
+//methods explicitly and provide additional code there with the standard initialization
+//code. You can evaluate the return value.
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+		desiredValue : LREAL;
+		kp : LREAL;
+		ki : LREAL;
+		kd : LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+desiredValue_ := desiredValue;
+kp_ := kp;
+ki_ := ki;
+kd_ := kd;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="getCycleTime" Id="{25083f72-f29f-459d-b5cd-a7a6c0986574}">
+      <Declaration><![CDATA[
+METHOD getCycleTime
+VAR
+	taskIndex : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+taskIndex := Tc2_System.GETCURTASKINDEXEX();
+IF taskIndex > 0 THEN
+    cycleTime_ := TwinCAT_SystemInfoVarList._TaskInfo[taskIndex].CycleTime;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="reset" Id="{8101f034-77b4-4451-92e5-1e7a94b8c87c}">
+      <Declaration><![CDATA[
+METHOD reset
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+actualValue_ := 0;
+previousValue_ := 0;
+error_ := 0;
+controlOutput_ := 0;
+cycleTime_ := 0;
+firstLoop_ := TRUE;
+p_ := 0;
+i_ := 0;
+d_ := 0;
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

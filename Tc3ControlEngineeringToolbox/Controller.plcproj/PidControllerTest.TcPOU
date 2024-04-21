@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.6">
+  <POU Name="PidControllerTest" Id="{42083164-b6f2-41f7-b052-940f46379ed0}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK PidControllerTest
+VAR
+	actualValuePid_ : LREAL := 5;
+	controlOutputPid_ : LREAL;
+	controller_ : PidController(desiredValue:=20, kp:=0.5, ki:=0.01, kd:=0.1);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="cyclic" Id="{02a25d97-0144-4a2d-9d4f-6d0e97c421a2}">
+      <Declaration><![CDATA[
+METHOD cyclic
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+controlOutputPid_ := controller_.cyclic(actualValuePid_);
+
+IF 	  controlOutputPid_ >= 5 THEN actualValuePid_ := actualValuePid_ + 0.1;
+ELSIF controlOutputPid_ >= 6 THEN actualValuePid_ := actualValuePid_ + 0.2;
+ELSIF controlOutputPid_ >= 7 THEN actualValuePid_ := actualValuePid_ + 0.3;
+ELSIF controlOutputPid_ >= 8 THEN actualValuePid_ := actualValuePid_ + 0.4;
+ELSIF controlOutputPid_ >= 9 THEN actualValuePid_ := actualValuePid_ + 0.5;
+	
+ELSIF controlOutputPid_ <= 5 THEN actualValuePid_ := actualValuePid_ - 0.1;
+ELSIF controlOutputPid_ <= 4 THEN actualValuePid_ := actualValuePid_ - 0.2;
+ELSIF controlOutputPid_ <= 3 THEN actualValuePid_ := actualValuePid_ - 0.3;
+ELSIF controlOutputPid_ <= 2 THEN actualValuePid_ := actualValuePid_ - 0.4;
+ELSIF controlOutputPid_ <= 1 THEN actualValuePid_ := actualValuePid_ - 0.5;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="reset" Id="{cd5b35d4-34c0-43c6-8b2d-41729088b636}">
+      <Declaration><![CDATA[
+METHOD reset
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+controller_.reset();]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
